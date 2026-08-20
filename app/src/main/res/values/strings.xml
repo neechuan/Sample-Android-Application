@@ -1,3 +1,25 @@
 <resources>
-    <string name="app_name">Sample Android Application</string>
+    <string name="app_name">My Tasks</string>
+    <string name="tasks_header_title">My To-Do List</string>
+    <string name="tasks_stats_format">%1$d of %2$d completed</string>
+    <string name="filter_all">All</string>
+    <string name="filter_active">Active</string>
+    <string name="filter_completed">Completed</string>
+    <string name="empty_tasks_title">No tasks found</string>
+    <string name="empty_tasks_subtitle">Tap + button to create a new task</string>
+    <string name="empty_tasks_filtered_subtitle">No tasks matching this filter</string>
+    <string name="add_task">Add Task</string>
+    <string name="edit_task">Edit Task</string>
+    <string name="task_title_hint">Task Title</string>
+    <string name="task_desc_hint">Description (optional)</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="title_required">Title cannot be empty</string>
+    <string name="delete_confirm_title">Delete Task?</string>
+    <string name="delete_confirm_message">Are you sure you want to delete \"%1$s\"?</string>
+    <string name="task_deleted">Task deleted</string>
+    <string name="task_added">Task added</string>
+    <string name="task_updated">Task updated</string>
+    <string name="undo">Undo</string>
 </resources>
