@@ -247,9 +247,17 @@ To verify that the AppDynamics instrumentation is functioning properly:
 3. **Verify in AppDynamics Controller**:
    Navigate to **User Experience** > **Mobile Applications** in the AppDynamics Controller to view active sessions, network requests, and crash analytics.
 
-### Crash Simulation
-The application includes a direct crash trigger via the **Crash** button in the header of `MainActivity`:
-- **Fatal Uncaught Exception**: Tapping the button throws an unhandled `RuntimeException` on the main UI thread.
+### Crash & ANR Simulation
+The application includes direct test triggers in the top app bar of `MainActivity`:
+
+#### 1. Application Not Responding (ANR) Simulation
+- **Trigger**: Tapping the **ANR** button initiates a 10-second blocking sleep (`Thread.sleep(10000)`) on the Android Main UI thread.
+- **System Event**: When input/touch events cannot be processed within 5 seconds, the Android OS triggers an **Application Not Responding (ANR)** event and displays the system ANR dialog.
+- **ADEUM Auto-Capture**: The AppDynamics Android Agent automatically monitors the UI thread out-of-the-box and captures ANR occurrences along with complete thread stack traces without requiring custom handler configuration.
+- **Reporting**: The ANR event and thread traces are transmitted to the AppDynamics EUM Collector and visible in the Controller under **Mobile Applications > Crashes & Errors > ANR**.
+
+#### 2. Fatal Crash Simulation
+- **Fatal Uncaught Exception**: Tapping the **Crash** button throws an unhandled `RuntimeException` on the main UI thread.
 - **ADEUM Handling**: The crash is immediately intercepted and serialized to disk by AppDynamics ADEUM's uncaught exception handler, preserving the stack trace, breadcrumbs, and device environment.
 - **Reporting**: On the next application launch, the agent uploads the crash artifact to AppDynamics, which appears under **Mobile Applications > Crashes**.
 

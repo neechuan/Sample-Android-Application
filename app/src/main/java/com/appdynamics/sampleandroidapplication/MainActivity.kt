@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvEmptySubtitle: TextView
     private lateinit var tvStats: TextView
     private lateinit var chipGroupFilter: ChipGroup
+    private lateinit var btnSimulateAnr: MaterialButton
     private lateinit var btnSimulateCrash: MaterialButton
     private lateinit var fabAddTodo: FloatingActionButton
 
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         tvEmptySubtitle = findViewById(R.id.tv_empty_subtitle)
         tvStats = findViewById(R.id.tv_stats)
         chipGroupFilter = findViewById(R.id.chip_group_filter)
+        btnSimulateAnr = findViewById(R.id.btn_simulate_anr)
         btnSimulateCrash = findViewById(R.id.btn_simulate_crash)
         fabAddTodo = findViewById(R.id.fab_add_todo)
     }
@@ -91,6 +94,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        btnSimulateAnr.setOnClickListener {
+            Toast.makeText(this, R.string.simulating_anr_toast, Toast.LENGTH_SHORT).show()
+            // Delay slightly so the Toast renders before freezing the Main UI thread
+            findViewById<View>(android.R.id.content).postDelayed({
+                // Block the Main UI Thread for 10 seconds (> 5s Android ANR threshold)
+                // When an input/touch event is dispatched while the thread is blocked, Android OS raises an ANR
+                try {
+                    Thread.sleep(10000)
+                } catch (e: InterruptedException) {
+                    e.printStackTrace()
+                }
+            }, 200)
+        }
+
         btnSimulateCrash.setOnClickListener {
             throw RuntimeException("Simulated Real App Crash: Fatal uncaught exception triggered by user tapping Crash button")
         }

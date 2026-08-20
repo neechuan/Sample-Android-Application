@@ -52,25 +52,54 @@
                         tools:text="1 of 3 completed" />
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_simulate_crash"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    android:paddingStart="12dp"
-                    android:paddingTop="8dp"
-                    android:paddingEnd="12dp"
-                    android:paddingBottom="8dp"
-                    android:text="@string/simulate_crash"
-                    android:textColor="@color/white"
-                    android:textSize="13sp"
-                    app:cornerRadius="8dp"
-                    app:icon="@drawable/ic_bug_report"
-                    app:iconPadding="6dp"
-                    app:iconTint="@color/white"
-                    app:strokeColor="#99FFFFFF"
-                    app:strokeWidth="1.5dp" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_simulate_anr"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="8dp"
+                        android:text="@string/simulate_anr"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        app:cornerRadius="8dp"
+                        app:icon="@drawable/ic_timer"
+                        app:iconPadding="4dp"
+                        app:iconTint="@color/white"
+                        app:strokeColor="#99FFFFFF"
+                        app:strokeWidth="1.5dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_simulate_crash"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        android:paddingStart="10dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="8dp"
+                        android:text="@string/simulate_crash"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        app:cornerRadius="8dp"
+                        app:icon="@drawable/ic_bug_report"
+                        app:iconPadding="4dp"
+                        app:iconTint="@color/white"
+                        app:strokeColor="#99FFFFFF"
+                        app:strokeWidth="1.5dp" />
+
+                </LinearLayout>
 
             </LinearLayout>
 

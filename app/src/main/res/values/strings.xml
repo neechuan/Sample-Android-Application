@@ -23,6 +23,8 @@
     <string name="task_updated">Task updated</string>
     <string name="undo">Undo</string>
     <string name="simulate_crash">Crash</string>
+    <string name="simulate_anr">ANR</string>
+    <string name="simulating_anr_toast">Freezing Main UI Thread for 10s. Tap screen to trigger ANR dialog…</string>
     <string name="crash_dialog_title">Simulate Crash / Error</string>
     <string name="crash_type_uncaught_runtime">1. Uncaught RuntimeException (Fatal Crash)</string>
     <string name="crash_type_null_pointer">2. NullPointerException (Background Thread)</string>
