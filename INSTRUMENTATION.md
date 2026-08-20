@@ -247,6 +247,17 @@ To verify that the AppDynamics instrumentation is functioning properly:
 3. **Verify in AppDynamics Controller**:
    Navigate to **User Experience** > **Mobile Applications** in the AppDynamics Controller to view active sessions, network requests, and crash analytics.
 
+### Custom Timers, Metrics & Breadcrumbs
+The app leverages AppDynamics Mobile Custom Data APIs across repository and UI layers:
+- **Custom Timers (`Instrumentation.startTimer` & `stopTimer`)**:
+  - **`"Local Storage Persistence"`** (`TodoRepository.kt`): Measures time taken to serialize tasks to JSON and write to `SharedPreferences`.
+  - **`"Task Creation Flow"`** (`MainActivity.kt`): Measures elapsed duration from opening the Add Task dialog to saving the task.
+- **Custom Metrics (`Instrumentation.reportMetric`)**:
+  - **`"JSON Storage Payload Size"`** (`TodoRepository.kt`): Tracks the byte size of the serialized task list payload stored on disk.
+  - **`"Task Title Character Length"`** (`MainActivity.kt`): Records character length of created task titles for trend analysis.
+- **Breadcrumbs (`Instrumentation.leaveBreadcrumb`)**:
+  - Rich event trails are recorded for user actions (opening/closing dialogs, switching filter tabs, completing tasks, deleting tasks, and triggering test errors) and included in session traces and crash snapshots.
+
 ### Crash & ANR Simulation
 The application includes direct test triggers in the top app bar of `MainActivity`:
 

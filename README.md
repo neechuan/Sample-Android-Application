@@ -158,11 +158,14 @@ Once the application is running:
    - **Network Requests**: Add, update, toggle, or delete tasks in the app. Each action fires an asynchronous HTTP request (`POST`, `PUT`, `DELETE`, `PATCH`) to `https://jsonplaceholder.typicode.com/todos`, captured automatically by the ADEUM agent.
    - **ANR (Application Not Responding) Simulation**: Tap the **ANR** button in the top app bar. This triggers a 10-second block on the Main UI thread (`Thread.sleep(10000)`). When input/touch events occur while the thread is blocked, Android OS raises an ANR dialog (> 5 seconds unresponsiveness). AppDynamics automatically captures the ANR event along with all thread stack traces.
    - **Crash Simulation**: Tap the **Crash** button in the top app bar to immediately trigger a real fatal uncaught exception (`RuntimeException`). The AppDynamics ADEUM crash reporter captures the stack trace, device state, and breadcrumbs, and reports the crash on the next session launch.
+   - **Custom Timers & Metrics**: Tapping `+` starts a custom timer (`"Task Creation Flow"`), and saving records the duration and reports a custom metric (`"Task Title Character Length"`).
+   - **Breadcrumbs**: Actions such as dialog interactions, filter changes, task completions, deletions, undos, and simulated errors record real-time breadcrumbs attached to session diagnostics and crash snapshots.
    - **Session Tracking**: Put the app in the background and resume it to generate session data.
 
 3. **Verify in AppDynamics Controller**:
    - Navigate to **User Experience** > **Mobile Applications** in your AppDynamics Controller.
    - View real-time active sessions, network latency breakdown, HTTP error rates, user flows, ANR reports, and crash snapshots under **Crashes & Errors** / **ANR**.
+   - Inspect custom metrics, task creation flow percentiles, and breadcrumbs under **Custom Data** and **Session Details**.
 
 ---
 

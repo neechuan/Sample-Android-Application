@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.data.TodoRepository
 import com.appdynamics.sampleandroidapplication.model.TodoItem
 import com.appdynamics.sampleandroidapplication.ui.TodoAdapter
@@ -75,6 +76,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         adapter = TodoAdapter(
             onToggleCompleted = { item ->
+                Instrumentation.leaveBreadcrumb("Toggled task '${item.title}' completed=${!item.isCompleted}")
                 lifecycleScope.launch {
                     setLoading(true)
                     allTodos = repository.toggleCompletion(item.id)
@@ -95,6 +97,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         btnSimulateAnr.setOnClickListener {
+            Instrumentation.leaveBreadcrumb("User initiated ANR simulation")
             Toast.makeText(this, R.string.simulating_anr_toast, Toast.LENGTH_SHORT).show()
             // Delay slightly so the Toast renders before freezing the Main UI thread
             findViewById<View>(android.R.id.content).postDelayed({
@@ -109,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnSimulateCrash.setOnClickListener {
+            Instrumentation.leaveBreadcrumb("User initiated fatal Crash simulation")
             throw RuntimeException("Simulated Real App Crash: Fatal uncaught exception triggered by user tapping Crash button")
         }
 
@@ -122,6 +126,7 @@ class MainActivity : AppCompatActivity() {
                 R.id.chip_filter_completed -> FilterType.COMPLETED
                 else -> FilterType.ALL
             }
+            Instrumentation.leaveBreadcrumb("Filter changed to ${currentFilter.name}")
             render()
         }
     }
@@ -171,6 +176,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun showAddOrEditDialog(itemToEdit: TodoItem?) {
         val isEditing = itemToEdit != null
+        val actionLabel = if (isEditing) "Edit" else "Add"
+        Instrumentation.leaveBreadcrumb("Opened $actionLabel Task Dialog")
+
+        // Start Custom Timer for new task creation flow
+        if (!isEditing) {
+            Instrumentation.startTimer("Task Creation Flow")
+        }
+
         val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_edit_todo, null)
 
         val tilTitle = dialogView.findViewById<TextInputLayout>(R.id.til_task_title)
@@ -186,7 +199,12 @@ class MainActivity : AppCompatActivity() {
             .setTitle(if (isEditing) R.string.edit_task else R.string.add_task)
             .setView(dialogView)
             .setPositiveButton(R.string.save, null) // Override later to prevent auto-dismiss on validation failure
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                Instrumentation.leaveBreadcrumb("Cancelled $actionLabel Task Dialog")
+            }
+            .setOnCancelListener {
+                Instrumentation.leaveBreadcrumb("Dismissed $actionLabel Task Dialog without saving")
+            }
             .create()
 
         dialog.setOnShowListener {
@@ -208,8 +226,14 @@ class MainActivity : AppCompatActivity() {
                     if (itemToEdit != null) {
                         val updated = itemToEdit.copy(title = title, description = desc)
                         allTodos = repository.updateTodo(updated)
+                        Instrumentation.leaveBreadcrumb("Updated task: '$title' (ID: ${itemToEdit.id})")
                         Snackbar.make(rvTodos, R.string.task_updated, Snackbar.LENGTH_SHORT).show()
                     } else {
+                        // Stop Custom Timer & Report Metric for character length
+                        Instrumentation.stopTimer("Task Creation Flow")
+                        Instrumentation.reportMetric("Task Title Character Length", title.length.toLong())
+                        Instrumentation.leaveBreadcrumb("Created new task: '$title'")
+
                         val newTodo = TodoItem(title = title, description = desc)
                         allTodos = repository.addTodo(newTodo)
                         Snackbar.make(rvTodos, R.string.task_added, Snackbar.LENGTH_SHORT).show()
@@ -224,12 +248,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showDeleteConfirmationDialog(item: TodoItem) {
+        Instrumentation.leaveBreadcrumb("Opened Delete Confirmation Dialog for task: '${item.title}'")
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_confirm_title)
             .setMessage(getString(R.string.delete_confirm_message, item.title))
             .setPositiveButton(R.string.delete) { _, _ ->
                 val deletedItem = item
                 val previousList = allTodos.toList()
+
+                Instrumentation.leaveBreadcrumb("Confirmed deletion for task: '${deletedItem.title}'")
 
                 lifecycleScope.launch {
                     setLoading(true)
@@ -239,6 +266,7 @@ class MainActivity : AppCompatActivity() {
 
                     Snackbar.make(rvTodos, R.string.task_deleted, Snackbar.LENGTH_LONG)
                         .setAction(R.string.undo) {
+                            Instrumentation.leaveBreadcrumb("Undo deletion for task: '${deletedItem.title}'")
                             repository.saveTodos(previousList)
                             allTodos = previousList
                             render()
@@ -246,7 +274,9 @@ class MainActivity : AppCompatActivity() {
                         .show()
                 }
             }
-            .setNegativeButton(R.string.cancel, null)
+            .setNegativeButton(R.string.cancel) { _, _ ->
+                Instrumentation.leaveBreadcrumb("Cancelled task deletion dialog")
+            }
             .show()
     }
 }

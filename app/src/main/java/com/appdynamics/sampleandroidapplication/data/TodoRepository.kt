@@ -3,6 +3,7 @@ package com.appdynamics.sampleandroidapplication.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.model.TodoItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -70,11 +71,22 @@ class TodoRepository(context: Context) {
     }
 
     fun saveTodos(todos: List<TodoItem>) {
+        // 1. Start Custom Timer for local persistence duration
+        Instrumentation.startTimer("Local Storage Persistence")
+
         val jsonArray = JSONArray()
         for (item in todos) {
             jsonArray.put(item.toJson())
         }
-        prefs.edit().putString(KEY_TODOS, jsonArray.toString()).apply()
+        val jsonString = jsonArray.toString()
+        prefs.edit().putString(KEY_TODOS, jsonString).apply()
+
+        // 2. Stop Custom Timer
+        Instrumentation.stopTimer("Local Storage Persistence")
+
+        // 3. Report Custom Metric (Payload size in bytes)
+        val payloadSizeBytes = jsonString.toByteArray(Charsets.UTF_8).size.toLong()
+        Instrumentation.reportMetric("JSON Storage Payload Size", payloadSizeBytes)
     }
 
     /**
