@@ -19,3 +19,17 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Preserve AppDynamics Agent SDK classes and interfaces
+-keep class com.appdynamics.eumagent.runtime.** { *; }
+-keep interface com.appdynamics.eumagent.runtime.** { *; }
+
+# Preserve custom classes, interfaces, and members annotated with @DontObfuscate
+-keep @com.appdynamics.eumagent.runtime.DontObfuscate class * { *; }
+-keep @com.appdynamics.eumagent.runtime.DontObfuscate interface * { *; }
+-keepclassmembers class * {
+    @com.appdynamics.eumagent.runtime.DontObfuscate *;
+}
+
+# Preserve stack trace line numbers and annotations
+-keepattributes SourceFile,LineNumberTable,*Annotation*,Signature

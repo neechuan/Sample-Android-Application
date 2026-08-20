@@ -10,7 +10,7 @@ This document details the software stack, architecture, and step-by-step configu
 | :--- | :--- | :--- | :--- |
 | **Programming Language** | Kotlin (`kotlin-android`) | `2.4.10` | Modern Kotlin stdlib and coroutine support |
 | **Java / JVM Target** | JDK / JVM | `17` | `sourceCompatibility = JavaVersion.VERSION_17`, `jvmTarget = '17'` |
-| **Build Automation** | Gradle Wrapper | `8.13` | Configured in `gradle-wrapper.properties` |
+| **Build Automation** | Gradle Wrapper | `8.14.4` | Configured in `gradle-wrapper.properties` |
 | **Android Gradle Plugin (AGP)** | `com.android.tools.build:gradle` | `8.13.2` | Android build tools pipeline |
 | **AppDynamics Gradle Plugin** | `com.appdynamics:appdynamics-gradle-plugin` | `26.8.0` | Injects bytecode instrumentation at compile/dex time |
 | **AppDynamics Android SDK** | `adeum` | `26.8.0` | EUM Agent runtime |

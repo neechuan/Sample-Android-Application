@@ -1,150 +1,193 @@
-<!-- PROJECT SHIELDS -->
-<!--
-*** We are using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
+# Sample Android Application with AppDynamics Mobile EUM
+
 [![MIT License][license-shield]][license-url]
+[![AppDynamics Agent](https://img.shields.io/badge/AppDynamics%20Agent-v26.8.0-blue.svg)](https://docs.appdynamics.com/appd/24.x/latest/en/end-user-monitoring/mobile-real-user-monitoring/instrument-android-applications)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.4.10-purple.svg)](https://kotlinlang.org/)
+[![Gradle](https://img.shields.io/badge/Gradle-8.14.4-02303A.svg)](https://gradle.org/)
+[![Target SDK](https://img.shields.io/badge/Target%20SDK-35-green.svg)](https://developer.android.com/about/versions/15)
+[![Java Target](https://img.shields.io/badge/JDK-17-orange.svg)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 
+A modern Android Task Management (To-Do) application written in Kotlin, integrated with **Cisco AppDynamics Mobile Real-User Monitoring (MRUM / ADEUM)**. 
 
+This repository serves as a reference implementation demonstrating best practices for instrumenting Android applications with the AppDynamics Android Agent, capturing network telemetry, user interactions, session lifecycles, and crash diagnostics.
 
-<!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
-    </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+---
 
+## Table of Contents
 
+- [Overview & Features](#overview--features)
+- [Tech Stack & Versions](#tech-stack--versions)
+- [Architecture & Structure](#architecture--structure)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [AppDynamics Configuration](#appdynamics-configuration)
+  - [Build and Run](#build-and-run)
+- [AppDynamics Monitoring & Verification](#appdynamics-monitoring--verification)
+- [Testing](#testing)
+- [Documentation](#documentation)
+- [License](#license)
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
-This project is build to serve our customer/partners and give an overview of the Android agent features.
+---
 
-### Built With
+## Overview & Features
 
-* [Android Studio](https://developer.android.com/studio/features)
-* [AppDynamics Android Agent](https://www.appdynamics.com/supported-technologies/android)
+### 📱 Task Management Application
+- **Complete CRUD Operations**: Create, view, edit, and delete tasks with a Material Design UI.
+- **Interactive Status & Filtering**: Filter tasks by **All**, **Active**, and **Completed** with a live task completion counter (`X of Y completed`).
+- **Undo & Recovery**: Instant deletion recovery via Snackbar undo action.
+- **Local Persistence**: Fast local caching and JSON serialization backed by `SharedPreferences`.
 
+### 📊 AppDynamics EUM Capabilities
+- **Automatic Network Instrumentation**: Asynchronous HTTP calls (`POST`, `PUT`, `DELETE`, `PATCH`) executed via `OkHttp 3` and Kotlin Coroutines against a mock REST API (`jsonplaceholder.typicode.com`), automatically captured and reported by the AppDynamics `adeum` plugin.
+- **Application Lifecycle Monitoring**: Agent startup during application initialisation (`App.kt`) capturing cold start and session metrics.
+- **Crash & Error Diagnostics**: Crash reporting with support for ProGuard/Dex mapping upload.
+- **Configurable Telemetry Endpoints**: Customisable Collector and Screenshot URLs for SaaS or on-premises deployments.
 
+---
 
-<!-- GETTING STARTED -->
+## Tech Stack & Versions
+
+| Component | Technology / Library | Version | Notes |
+| :--- | :--- | :--- | :--- |
+| **Language** | Kotlin | `2.4.10` | Modern Kotlin standard library and coroutines |
+| **JDK / JVM Target** | Java / JVM | `17` | `JavaVersion.VERSION_17` |
+| **Android SDK** | Compile / Target SDK | `35` (Android 15) | Min SDK `23` (Android 6.0) |
+| **Build Automation** | Gradle Wrapper | `8.14.4` | Groovy DSL build files |
+| **Android Gradle Plugin** | AGP (`com.android.tools.build:gradle`) | `8.13.2` | Android build pipeline |
+| **AppDynamics Gradle Plugin** | `com.appdynamics:appdynamics-gradle-plugin` | `26.8.0` | Bytecode instrumentation at build/dex time |
+| **AppDynamics Android SDK** | `adeum` | `26.8.0` | Mobile EUM Runtime SDK |
+| **Networking** | OkHttp | `4.9.1` | Auto-instrumented HTTP client |
+| **Async & Concurrency** | Kotlin Coroutines | `1.5.2` | Background I/O and lifecycle scopes |
+| **UI Components** | AndroidX & Material Design | `1.3.0` | Material dialogs, chips, FAB, ListAdapter with DiffUtil |
+
+---
+
+## Architecture & Structure
+
+The codebase is structured into clear layers separating data persistence, network communication, business models, and UI controllers:
+
+```
+Sample-Android-Application/
+├── app/
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── AndroidManifest.xml          # Permissions & Application class registration
+│   │   │   ├── java/com/appdynamics/sampleandroidapplication/
+│   │   │   │   ├── App.kt                   # Application entrypoint & ADEUM initialisation
+│   │   │   │   ├── MainActivity.kt          # UI controller, filtering, dialogs, & interactions
+│   │   │   │   ├── data/
+│   │   │   │   │   └── TodoRepository.kt    # Data CRUD, JSON storage, and OkHttp network calls
+│   │   │   │   ├── model/
+│   │   │   │   │   └── TodoItem.kt          # Data model with JSON serialisation
+│   │   │   │   └── ui/
+│   │   │   │       └── TodoAdapter.kt       # RecyclerView ListAdapter with DiffUtil
+│   │   │   └── res/
+│   │   │       ├── layout/                  # Activity & dialog XML layouts
+│   │   │       └── values/
+│   │   │           ├── secrets.xml          # EUM App Key and Collector URL
+│   │   │           └── strings.xml          # UI string resources
+│   │   └── test/                            # Unit tests for Models & Repository
+│   └── build.gradle                         # App module Gradle configuration (adeum plugin applied)
+├── appdynamics.properties                   # EUM account name & license key
+├── build.gradle                             # Root build configuration
+├── INSTRUMENTATION.md                       # Comprehensive agent instrumentation guide
+└── README.md
+```
+
+---
+
 ## Getting Started
-
-To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-Android Studio downloaded (i.e. from [developer.android.com](https://developer.android.com/studio)) and installed.
+1. **Android Studio**: Android Studio Ladybug / Koala or newer recommended.
+2. **JDK 17**: Ensure `JAVA_HOME` points to a JDK 17 installation.
+3. **Android SDK 35**: Installed via Android Studio SDK Manager (Build Tools `35.0.0`).
+4. **AppDynamics EUM Account**: An active Mobile Real-User Monitoring (MRUM) application key and license.
 
-Set of env properties, below example values for macOS 10.15
-```
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_261.jdk/Contents/Home"
-export ANDROID_HOME="$HOME/Library/Android/sdk"
-export PATH="$PATH:/usr/local/opt/openjdk/bin"
-export PATH="$PATH:$ANDROID_HOME/platform-tools"
-export PATH="$PATH:$ANDROID_HOME/emulator"
-export PATH="$PATH:$ANDROID_HOME/tools/bin"
-export PATH="$PATH:$ANDROID_HOME/tools"
-```
+### AppDynamics Configuration
 
-To test the features of AppDynamics Android agent, you will need also to  (hence have MRUM license). If you do not have one, please contact [our sales](https://www.appdynamics.com/company/contact-us)
+1. **Root Configuration (`appdynamics.properties`)**:
+   Create or update [appdynamics.properties](file:///Users/garychew/Documents/poc/Sample-Android-Application/appdynamics.properties) in the project root:
+   ```properties
+   EUM_ACCOUNT_NAME="<YOUR_EUM_ACCOUNT_NAME>"
+   EUM_LICENSE_KEY="<YOUR_EUM_LICENSE_KEY>"
+   ```
 
-Please create an MRUM application on your AppDynamics Controller. You shall get the App Key and Collector URL from this process. If you would like to test additionally crash reports, this will require publishing pro-guard/dex file mappings. To upload those files, you will need to provide additionally your account name (sample: `AppDynamics-abcdefghXXXXXXXX`) and your EUM license's key (sample: `abcdef12-3456-7890-abcd-17f7fcecd4f0`).
+2. **App Secrets & Endpoints (`app/src/main/res/values/secrets.xml`)**:
+   Ensure [app/src/main/res/values/secrets.xml](file:///Users/garychew/Documents/poc/Sample-Android-Application/app/src/main/res/values/secrets.xml) contains your EUM App Key and Collector URL:
+   ```xml
+   <?xml version="1.0" encoding="utf-8"?>
+   <resources>
+       <string name="APP_KEY">XX-XXX-XXX-XXX</string>
+       <string name="COLLECTOR_URL">https://col.eum-appdynamics.com</string>
+       <string name="SCREENSHOT_URL">https://image.eum-appdynamics.com</string>
+   </resources>
+   ```
 
-* [Configure ProGuard to Prevent Obfuscation and Class Removal](https://docs.appdynamics.com/21.6/en/end-user-monitoring/mobile-real-user-monitoring/instrument-android-applications/customize-the-android-build/configure-proguard-to-prevent-obfuscation-and-class-removal)
-* [Automatically Upload Mapping Files](https://docs.appdynamics.com/21.6/en/end-user-monitoring/mobile-real-user-monitoring/instrument-android-applications/customize-the-android-build/automatically-upload-mapping-files)
+### Build and Run
 
-For security reason, we keep above values inside `secrets.xml` and `appdynamics.properties` files. This is only to prevent those details to be visible on GitHub. Resource files are more vulnerable to decompilation of your application, hence discoverable. If you would like to keep those values hidden from your end-users refer to [this SO answer](https://stackoverflow.com/a/14572051) for a detailed breakdown of the obfuscation options.
+#### Using the Command Line:
+```bash
+# Clean and assemble debug APK
+./gradlew assembleDebug
 
-Please create a file `appdynamics.properties` inside your project's root folder (alongside settings.gradle).
-```properties
-EUM_ACCOUNT_NAME="AppDynamics-abcdefghXXXXXXXX"
-EUM_LICENSE_KEY="abcdef12-3456-7890-abcd-17f7fcecd4f0"
-```
-
-Please create a file `secrets.xml` in `app/src/main/res/values/` as [explained by CodePath](https://guides.codepath.com/android/Storing-Secret-Keys-in-Android#secrets-in-resource-files)
-secrets.xml
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="APP_KEY">YOUR_APP_KEY</string>
-    <string name="COLLECTOR_URL">YOUR_COLLECTOR_URL</string>
-</resources>
+# Install on a connected device or emulator
+./gradlew installDebug
 ```
 
-### Installation
+#### Using Android Studio:
+1. Open the project folder in Android Studio.
+2. Allow Gradle sync to complete.
+3. Select an emulator or connected device and click **Run (Shift + F10)**.
 
-You can run this project directly, from Android Studio or cloning the repo and opening it with Android Studio application.
-1. Clone the project from gitbub
-2. Open project in Android studio
-3. Replace values in secrets.xml
-3. Build application on emulator or physical device
+---
 
-<!-- USAGE EXAMPLES -->
-## Usage
-For more examples, please refer to the [AppDynamics Documentation](https://docs.appdynamics.com/21.6/en/end-user-monitoring/mobile-real-user-monitoring/instrument-android-applications)_
+## AppDynamics Monitoring & Verification
 
-<!-- ROADMAP -->
-## Roadmap
+Once the application is running:
 
-See the [open issues](https://github.com/Appdynamics/Sample-Android-Application/issues) for a list of proposed features (and known issues).
+1. **Inspect Logcat Runtime Telemetry**:
+   Filter Logcat for the `ADEUM` or `AppDynamics` tag:
+   ```bash
+   adb logcat -s ADEUM
+   ```
+   You will see initialization logs, session starts, and beacon transmissions for network calls.
 
-<!-- CONTRIBUTING -->
-## Contributing
+2. **Trigger Telemetry Events**:
+   - **Network Requests**: Add, update, toggle, or delete tasks in the app. Each action fires an asynchronous HTTP request (`POST`, `PUT`, `DELETE`, `PATCH`) to `https://jsonplaceholder.typicode.com/todos`, captured automatically by the ADEUM agent.
+   - **Session Tracking**: Put the app in the background and resume it to generate session data.
 
-Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+3. **Verify in AppDynamics Controller**:
+   - Navigate to **User Experience** > **Mobile Applications** in your AppDynamics Controller.
+   - View real-time active sessions, network latency breakdown, HTTP error rates, and user flow metrics.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+---
 
-<!-- LICENSE -->
+## Testing
+
+Run unit tests directly with Gradle:
+
+```bash
+# Run local unit tests
+./gradlew testDebugUnitTest
+```
+
+Unit test suites cover:
+- **`TodoItemTest.kt`**: JSON serialization and deserialization integrity, immutability updates.
+- **`TodoRepositoryTest.kt`**: Repository CRUD operations and JSON persistence.
+
+---
+
+## Documentation
+
+For an in-depth guide on the AppDynamics Gradle plugin integration, bytecode transformation, Android permissions, and ProGuard mapping configuration, refer to [INSTRUMENTATION.md](file:///Users/garychew/Documents/poc/Sample-Android-Application/INSTRUMENTATION.md).
+
+---
+
 ## License
-Distributed under the GNU GPLv3 License. See [LICENSE](https://github.com/Appdynamics/Sample-Android-Application/blob/master/LICENSE.txt) for more information.
 
-<!-- CONTACT -->
-## Contact
-Feel free to reach out to [AppDynamics Support](https://www.appdynamics.com/support)
-Project Link: [https://github.com/Appdynamics/Sample-Android-Application](https://github.com/Appdynamics/Sample-Android-Application)
+Distributed under the GNU GPLv3 License. See [LICENSE.txt](file:///Users/garychew/Documents/poc/Sample-Android-Application/LICENSE.txt) for more details.
 
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/Appdynamics/Sample-Android-Application.svg?style=plastic
-[contributors-url]: https://github.com/Appdynamics/Sample-Android-Application/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/Appdynamics/Sample-Android-Application.svg?style=plastic
-[forks-url]: https://github.com/Appdynamics/Sample-Android-Application/network/members
-[stars-shield]: https://img.shields.io/github/stars/Appdynamics/Sample-Android-Application.svg?style=plastic
-[stars-url]: https://github.com/Appdynamics/Sample-Android-Application/stargazers
-[issues-shield]: https://img.shields.io/github/issues/Appdynamics/Sample-Android-Application.svg?style=plastic
-[issues-url]: https://github.com/Appdynamics/Sample-Android-Application/issues
-[license-shield]: https://img.shields.io/github/license/Appdynamics/Sample-Android-Application.svg?style=plastic
-[license-url]: https://github.com/Appdynamics/Sample-Android-Application/blob/master/LICENSE.txt
-
+[license-shield]: https://img.shields.io/badge/License-GPLv3-blue.svg
+[license-url]: file:///Users/garychew/Documents/poc/Sample-Android-Application/LICENSE.txt
