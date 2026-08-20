@@ -22,4 +22,11 @@
     <string name="task_added">Task added</string>
     <string name="task_updated">Task updated</string>
     <string name="undo">Undo</string>
+    <string name="simulate_crash">Crash</string>
+    <string name="crash_dialog_title">Simulate Crash / Error</string>
+    <string name="crash_type_uncaught_runtime">1. Uncaught RuntimeException (Fatal Crash)</string>
+    <string name="crash_type_null_pointer">2. NullPointerException (Background Thread)</string>
+    <string name="crash_type_divide_zero">3. ArithmeticException (Divide by Zero)</string>
+    <string name="crash_type_handled_error">4. Handled Error (Instrumentation.reportError)</string>
+    <string name="handled_error_reported">Handled exception reported to AppDynamics EUM</string>
 </resources>

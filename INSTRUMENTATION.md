@@ -247,6 +247,12 @@ To verify that the AppDynamics instrumentation is functioning properly:
 3. **Verify in AppDynamics Controller**:
    Navigate to **User Experience** > **Mobile Applications** in the AppDynamics Controller to view active sessions, network requests, and crash analytics.
 
+### Crash Simulation
+The application includes a direct crash trigger via the **Crash** button in the header of `MainActivity`:
+- **Fatal Uncaught Exception**: Tapping the button throws an unhandled `RuntimeException` on the main UI thread.
+- **ADEUM Handling**: The crash is immediately intercepted and serialized to disk by AppDynamics ADEUM's uncaught exception handler, preserving the stack trace, breadcrumbs, and device environment.
+- **Reporting**: On the next application launch, the agent uploads the crash artifact to AppDynamics, which appears under **Mobile Applications > Crashes**.
+
 ## 5. Build files
 The app uses **Groovy DSL** for its build files.
 
@@ -258,7 +264,7 @@ The app uses **Groovy DSL** for its build files.
   - Single-quoted string literals and dynamic property access (`appDynamicsProperties['EUM_ACCOUNT_NAME']`).
 
 
-  ## 6. Network Request Verification
-Unit Tests: Ran ./gradlew testDebugUnitTest — Passed.
-Build: Ran ./gradlew assembleDebug — BUILD SUCCESSFUL.
-ADEUM Monitoring: The adeum plugin instruments OkHttpClient calls, allowing network beacons to be automatically captured and reported in AppDynamics.
+## 6. Verification Summary
+- **Unit Tests**: Ran `./gradlew testDebugUnitTest` — Passed.
+- **Build**: Ran `./gradlew assembleDebug` — BUILD SUCCESSFUL.
+- **ADEUM Monitoring**: The `adeum` plugin instruments OkHttpClient calls and automatically captures uncaught exceptions and reported errors to AppDynamics.

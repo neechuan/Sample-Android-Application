@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.appdynamics.sampleandroidapplication.data.TodoRepository
 import com.appdynamics.sampleandroidapplication.model.TodoItem
 import com.appdynamics.sampleandroidapplication.ui.TodoAdapter
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -34,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvEmptySubtitle: TextView
     private lateinit var tvStats: TextView
     private lateinit var chipGroupFilter: ChipGroup
+    private lateinit var btnSimulateCrash: MaterialButton
     private lateinit var fabAddTodo: FloatingActionButton
 
     private enum class FilterType {
@@ -63,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         tvEmptySubtitle = findViewById(R.id.tv_empty_subtitle)
         tvStats = findViewById(R.id.tv_stats)
         chipGroupFilter = findViewById(R.id.chip_group_filter)
+        btnSimulateCrash = findViewById(R.id.btn_simulate_crash)
         fabAddTodo = findViewById(R.id.fab_add_todo)
     }
 
@@ -88,6 +91,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
+        btnSimulateCrash.setOnClickListener {
+            throw RuntimeException("Simulated Real App Crash: Fatal uncaught exception triggered by user tapping Crash button")
+        }
+
         fabAddTodo.setOnClickListener {
             showAddOrEditDialog(null)
         }

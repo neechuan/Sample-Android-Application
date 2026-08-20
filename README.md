@@ -156,11 +156,12 @@ Once the application is running:
 
 2. **Trigger Telemetry Events**:
    - **Network Requests**: Add, update, toggle, or delete tasks in the app. Each action fires an asynchronous HTTP request (`POST`, `PUT`, `DELETE`, `PATCH`) to `https://jsonplaceholder.typicode.com/todos`, captured automatically by the ADEUM agent.
+   - **Crash Simulation**: Tap the **Crash** button in the top app bar to immediately trigger a real fatal uncaught exception (`RuntimeException`). The AppDynamics ADEUM crash reporter captures the stack trace, device state, and breadcrumbs, and reports the crash on the next session launch.
    - **Session Tracking**: Put the app in the background and resume it to generate session data.
 
 3. **Verify in AppDynamics Controller**:
    - Navigate to **User Experience** > **Mobile Applications** in your AppDynamics Controller.
-   - View real-time active sessions, network latency breakdown, HTTP error rates, and user flow metrics.
+   - View real-time active sessions, network latency breakdown, HTTP error rates, user flows, and crash snapshots under **Crashes**.
 
 ---
 
