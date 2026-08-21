@@ -1,5 +1,6 @@
 package com.appdynamics.sampleandroidapplication
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.appdynamics.eumagent.runtime.DontObfuscate
 import com.appdynamics.eumagent.runtime.Instrumentation
+import com.appdynamics.sampleandroidapplication.auth.data.AuthRepository
+import com.appdynamics.sampleandroidapplication.auth.ui.LoginActivity
 import com.appdynamics.sampleandroidapplication.data.TodoRepository
 import com.appdynamics.sampleandroidapplication.model.TodoItem
 import com.appdynamics.sampleandroidapplication.ui.TodoAdapter
@@ -30,6 +33,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity() {
 
     private lateinit var repository: TodoRepository
+    private lateinit var authRepository: AuthRepository
     private lateinit var adapter: TodoAdapter
 
     private lateinit var rvTodos: RecyclerView
@@ -55,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         repository = TodoRepository(this)
+        authRepository = AuthRepository(this)
 
         initViews()
         setupRecyclerView()
@@ -116,6 +121,16 @@ class MainActivity : AppCompatActivity() {
         btnSimulateCrash.setOnClickListener {
             Instrumentation.leaveBreadcrumb("User initiated fatal Crash simulation")
             throw RuntimeException("Simulated Real App Crash: Fatal uncaught exception triggered by user tapping Crash button")
+        }
+
+        // Long-press the Crash button to trigger logout (keeps the UI uncluttered)
+        btnSimulateCrash.setOnLongClickListener {
+            Instrumentation.leaveBreadcrumb("User logged out via long-press")
+            authRepository.logout()
+            startActivity(Intent(this, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
+            true
         }
 
         fabAddTodo.setOnClickListener {

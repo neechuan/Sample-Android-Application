@@ -31,4 +31,14 @@
     <string name="crash_type_divide_zero">3. ArithmeticException (Divide by Zero)</string>
     <string name="crash_type_handled_error">4. Handled Error (Instrumentation.reportError)</string>
     <string name="handled_error_reported">Handled exception reported to AppDynamics EUM</string>
+
+    <!-- Login screen -->
+    <string name="login_subtitle">Sign in to manage your tasks</string>
+    <string name="login_hint_email">Email address</string>
+    <string name="login_hint_password">Password</string>
+    <string name="login_btn_label">Sign In</string>
+    <string name="login_forgot_password">Forgot password?</string>
+    <string name="login_error_invalid_email">Please enter a valid email address</string>
+    <string name="login_error_password_too_short">Password must be at least 6 characters</string>
+    <string name="logout">Logout</string>
 </resources>
