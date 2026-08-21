@@ -3,6 +3,7 @@ package com.appdynamics.sampleandroidapplication.data
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import com.appdynamics.eumagent.runtime.DontObfuscate
 import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.model.TodoItem
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +15,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 
+@DontObfuscate
 class TodoRepository(context: Context) {
 
     private val prefs: SharedPreferences =
@@ -58,6 +60,7 @@ class TodoRepository(context: Context) {
     fun getTodos(): MutableList<TodoItem> {
         val jsonString = prefs.getString(KEY_TODOS, null) ?: return mutableListOf()
         val list = mutableListOf<TodoItem>()
+
         try {
             val jsonArray = JSONArray(jsonString)
             for (i in 0 until jsonArray.length()) {
@@ -94,6 +97,11 @@ class TodoRepository(context: Context) {
      * and persists the item locally.
      */
     suspend fun addTodo(item: TodoItem): List<TodoItem> = withContext(Dispatchers.IO) {
+        // 1. Report Info Point
+        val tracker = Instrumentation.beginCall(
+            "com.appdynamics.sampleandroidapplication.data.TodoRepository",
+            "addTodo"
+        )
         try {
             val payload = JSONObject().apply {
                 put("title", item.title)
@@ -116,6 +124,21 @@ class TodoRepository(context: Context) {
         val todos = getTodos()
         todos.add(0, item) // Add at top
         saveTodos(todos)
+
+        // 1. Report Info Point
+        try {
+            val jsonArray = JSONArray()
+            for (item in todos) {
+                jsonArray.put(item.toJson())
+            }
+            prefs.edit().putString(KEY_TODOS, jsonArray.toString()).apply()
+            // 2. End tracking on success
+            Instrumentation.endCall(tracker)
+        } catch (e: Exception) {
+            // 3. End tracking with exception details if it fails
+            Instrumentation.endCall(tracker, e)
+            throw e
+        }
         todos
     }
 
@@ -124,6 +147,7 @@ class TodoRepository(context: Context) {
      * and updates the item locally.
      */
     suspend fun updateTodo(updatedItem: TodoItem): List<TodoItem> = withContext(Dispatchers.IO) {
+    
         try {
             val payload = JSONObject().apply {
                 put("title", updatedItem.title)
@@ -157,6 +181,7 @@ class TodoRepository(context: Context) {
      * and removes the item locally.
      */
     suspend fun deleteTodo(id: String): List<TodoItem> = withContext(Dispatchers.IO) {
+
         try {
             val request = Request.Builder()
                 .url("$API_BASE_URL/1")

@@ -258,6 +258,17 @@ The app leverages AppDynamics Mobile Custom Data APIs across repository and UI l
 - **Breadcrumbs (`Instrumentation.leaveBreadcrumb`)**:
   - Rich event trails are recorded for user actions (opening/closing dialogs, switching filter tabs, completing tasks, deleting tasks, and triggering test errors) and included in session traces and crash snapshots.
 
+### Info Points (Dynamic Information Points)
+The codebase is annotated with `@DontObfuscate` and pre-configured with ProGuard rules to support AppDynamics Dynamic Info Points configured directly from the AppDynamics Controller:
+
+| Info Point Name | Target Class | Method Name | Telemetry Provided |
+| :--- | :--- | :--- | :--- |
+| **`TodoRepository.getTodos`** | `com.appdynamics.sampleandroidapplication.data.TodoRepository` | `getTodos` | Invocations per min, local read & JSON parsing latency |
+| **`TodoRepository.saveTodos`** | `com.appdynamics.sampleandroidapplication.data.TodoRepository` | `saveTodos` | JSON serialization duration & disk write frequency |
+| **`TodoRepository.addTodo`** | `com.appdynamics.sampleandroidapplication.data.TodoRepository` | `addTodo` | End-to-end task addition time (network + storage) |
+| **`TodoRepository.deleteTodo`** | `com.appdynamics.sampleandroidapplication.data.TodoRepository` | `deleteTodo` | Task deletion frequency and API response time |
+| **`MainActivity.render`** | `com.appdynamics.sampleandroidapplication.MainActivity` | `render` | UI list re-render duration and frequency |
+
 ### Crash & ANR Simulation
 The application includes direct test triggers in the top app bar of `MainActivity`:
 

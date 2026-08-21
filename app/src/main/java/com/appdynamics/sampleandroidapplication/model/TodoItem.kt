@@ -1,11 +1,13 @@
 package com.appdynamics.sampleandroidapplication.model
 
+import com.appdynamics.eumagent.runtime.DontObfuscate
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+@DontObfuscate
 data class TodoItem(
     val id: String = UUID.randomUUID().toString(),
     var title: String,

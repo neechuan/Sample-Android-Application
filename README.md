@@ -166,6 +166,7 @@ Once the application is running:
    - Navigate to **User Experience** > **Mobile Applications** in your AppDynamics Controller.
    - View real-time active sessions, network latency breakdown, HTTP error rates, user flows, ANR reports, and crash snapshots under **Crashes & Errors** / **ANR**.
    - Inspect custom metrics, task creation flow percentiles, and breadcrumbs under **Custom Data** and **Session Details**.
+   - Configure and monitor dynamic method execution times under **Configuration > Info Points** and view them in the **Metric Browser**.
 
 ---
 

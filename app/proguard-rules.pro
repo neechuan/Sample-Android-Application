@@ -31,5 +31,17 @@
     @com.appdynamics.eumagent.runtime.DontObfuscate *;
 }
 
+# Preserve classes and methods targeted by AppDynamics Info Points
+-keep class com.appdynamics.sampleandroidapplication.data.TodoRepository {
+    public *;
+}
+-keep class com.appdynamics.sampleandroidapplication.MainActivity {
+    public *;
+    protected *;
+}
+-keep class com.appdynamics.sampleandroidapplication.model.TodoItem {
+    public *;
+}
+
 # Preserve stack trace line numbers and annotations
 -keepattributes SourceFile,LineNumberTable,*Annotation*,Signature

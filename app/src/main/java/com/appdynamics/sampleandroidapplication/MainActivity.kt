@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.appdynamics.eumagent.runtime.DontObfuscate
 import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.data.TodoRepository
 import com.appdynamics.sampleandroidapplication.model.TodoItem
@@ -25,6 +26,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 
+@DontObfuscate
 class MainActivity : AppCompatActivity() {
 
     private lateinit var repository: TodoRepository
