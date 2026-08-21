@@ -31,6 +31,12 @@ class AuthRepository(context: Context) {
         // which we use to synthesise a deterministic mock JWT token.
         private const val API_BASE_URL = "https://jsonplaceholder.typicode.com"
         private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
+
+        // ── In-memory session login tracking ──────────────────────────────
+        // Intentionally NOT persisted to SharedPrefs: resets on every app
+        // restart, which is the correct scope for "within a session".
+        @Volatile private var loginCount: Int = 0
+        private val loginHistory: MutableList<String> = mutableListOf()
     }
 
     // ── Session helpers ────────────────────────────────────────────────────────
@@ -82,6 +88,17 @@ class AuthRepository(context: Context) {
             .remove(KEY_TOKEN)
             .remove(KEY_EMAIL)
             .apply()
+
+        // Clear username from AppDynamics custom session data
+        Instrumentation.setUserData("username", null as String?)
+
+        /*
+        // Reset in-memory session counters so the next login starts from scratch
+        loginCount = 0
+        loginHistory.clear()
+        Instrumentation.setUserData("login_count", "0")
+        Instrumentation.setUserData("login_history", null as String?)
+        */
         Log.d(TAG, "Logout complete (serverSuccess=$serverSuccess), local session cleared")
 
         Instrumentation.endCall(tracker)
@@ -132,7 +149,25 @@ class AuthRepository(context: Context) {
                         .putString(KEY_EMAIL, email)
                         .apply()
 
-                    Log.d(TAG, "Login succeeded for $email, token stored")
+                    // ── Track multiple logins within a session ───────────────
+                    loginCount++
+                    if (!loginHistory.contains(email)) loginHistory.add(email)
+                    val historyStr = loginHistory.joinToString(",")
+
+                    // Current active user (overwrites on each login)
+                    Instrumentation.setUserData("username", email)
+                    // How many login calls happened this session
+                    Instrumentation.setUserData("login_count", loginCount.toString())
+                    // Ordered list of every distinct username used this session
+                    Instrumentation.setUserData("login_history", historyStr)
+                    // Aggregatable metric: count per session visible in dashboards
+                    Instrumentation.reportMetric("Login Count", loginCount.toLong())
+                    // Timestamped breadcrumb on the session event timeline
+                    Instrumentation.leaveBreadcrumb(
+                        "Login #$loginCount: $email (session users: $historyStr)"
+                    )
+
+                    Log.d(TAG, "Login #$loginCount for $email | history: $historyStr")
                     Instrumentation.endCall(tracker)
                     AuthResult.Success(mockToken)
                 }
