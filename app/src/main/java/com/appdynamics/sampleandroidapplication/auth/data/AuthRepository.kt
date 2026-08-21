@@ -5,6 +5,7 @@ import android.util.Log
 import com.appdynamics.eumagent.runtime.DontObfuscate
 import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.auth.model.AuthResult
+import com.appdynamics.sampleandroidapplication.auth.model.LogoutResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -40,12 +41,51 @@ class AuthRepository(context: Context) {
 
     fun getSavedEmail(): String = prefs.getString(KEY_EMAIL, "") ?: ""
 
-    fun logout() {
+    // ── POST /auth/logout ──────────────────────────────────────────────────────
+
+    /**
+     * Notifies the server to invalidate the session token, then clears local state.
+     *
+     * Mock strategy: DELETE jsonplaceholder /posts/1 always returns HTTP 200.
+     * Swap to your real /auth/logout endpoint when ready.
+     *
+     * Design rule: local token is ALWAYS cleared, even on network failure,
+     * so the user is never stuck in a logged-in state they cannot escape.
+     */
+    suspend fun logout(): LogoutResult = withContext(Dispatchers.IO) {
+        val tracker = Instrumentation.beginCall(
+            "com.appdynamics.sampleandroidapplication.auth.data.AuthRepository",
+            "logout"
+        )
+        val token = getToken()
+        var serverSuccess = false
+
+        try {
+            val request = Request.Builder()
+                .url("$API_BASE_URL/posts/1")  // mock: real endpoint would be /auth/logout
+                .delete()
+                .addHeader("Authorization", "Bearer ${token.orEmpty()}")
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                Log.d(TAG, "logout API response code: ${response.code}")
+                serverSuccess = response.isSuccessful
+            }
+        } catch (e: Exception) {
+            // Network failure: still clear local session so user is never stuck
+            Log.e(TAG, "logout network request failed — clearing local session anyway", e)
+            Instrumentation.endCall(tracker, e)
+        }
+
+        // Always clear local credentials
         prefs.edit()
             .remove(KEY_TOKEN)
             .remove(KEY_EMAIL)
             .apply()
-        Log.d(TAG, "User logged out, token cleared")
+        Log.d(TAG, "Logout complete (serverSuccess=$serverSuccess), local session cleared")
+
+        Instrumentation.endCall(tracker)
+        if (serverSuccess) LogoutResult.Success else LogoutResult.SuccessOffline
     }
 
     // ── POST /auth/login ───────────────────────────────────────────────────────

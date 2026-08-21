@@ -13,9 +13,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.widget.ImageButton
 import com.appdynamics.eumagent.runtime.DontObfuscate
 import com.appdynamics.eumagent.runtime.Instrumentation
 import com.appdynamics.sampleandroidapplication.auth.data.AuthRepository
+import com.appdynamics.sampleandroidapplication.auth.model.LogoutResult
 import com.appdynamics.sampleandroidapplication.auth.ui.LoginActivity
 import com.appdynamics.sampleandroidapplication.data.TodoRepository
 import com.appdynamics.sampleandroidapplication.model.TodoItem
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chipGroupFilter: ChipGroup
     private lateinit var btnSimulateAnr: MaterialButton
     private lateinit var btnSimulateCrash: MaterialButton
+    private lateinit var btnLogout: ImageButton
     private lateinit var fabAddTodo: FloatingActionButton
 
     private enum class FilterType {
@@ -68,16 +71,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViews() {
-        rvTodos = findViewById(R.id.rv_todos)
+        rvTodos              = findViewById(R.id.rv_todos)
         progressBarLoading = findViewById(R.id.progress_bar_loading)
         layoutEmptyState = findViewById(R.id.layout_empty_state)
         tvEmptyTitle = findViewById(R.id.tv_empty_title)
         tvEmptySubtitle = findViewById(R.id.tv_empty_subtitle)
         tvStats = findViewById(R.id.tv_stats)
         chipGroupFilter = findViewById(R.id.chip_group_filter)
-        btnSimulateAnr = findViewById(R.id.btn_simulate_anr)
+        btnSimulateAnr  = findViewById(R.id.btn_simulate_anr)
         btnSimulateCrash = findViewById(R.id.btn_simulate_crash)
-        fabAddTodo = findViewById(R.id.fab_add_todo)
+        btnLogout        = findViewById(R.id.btn_logout)
+        fabAddTodo       = findViewById(R.id.fab_add_todo)
     }
 
     private fun setupRecyclerView() {
@@ -123,14 +127,8 @@ class MainActivity : AppCompatActivity() {
             throw RuntimeException("Simulated Real App Crash: Fatal uncaught exception triggered by user tapping Crash button")
         }
 
-        // Long-press the Crash button to trigger logout (keeps the UI uncluttered)
-        btnSimulateCrash.setOnLongClickListener {
-            Instrumentation.leaveBreadcrumb("User logged out via long-press")
-            authRepository.logout()
-            startActivity(Intent(this, LoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
-            true
+        btnLogout.setOnClickListener {
+            showLogoutConfirmationDialog()
         }
 
         fabAddTodo.setOnClickListener {
@@ -146,6 +144,47 @@ class MainActivity : AppCompatActivity() {
             Instrumentation.leaveBreadcrumb("Filter changed to ${currentFilter.name}")
             render()
         }
+    }
+
+    // ── Logout flow ───────────────────────────────────────────────────────
+
+    private fun showLogoutConfirmationDialog() {
+        Instrumentation.leaveBreadcrumb("Logout confirmation dialog shown")
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.logout)
+            .setMessage(R.string.logout_confirm_message)
+            .setPositiveButton(R.string.logout) { _, _ ->
+                lifecycleScope.launch { performLogout() }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    /**
+     * Calls POST /auth/logout on the server (via AuthRepository), then
+     * clears the back stack and navigates to LoginActivity.
+     * The local token is always cleared even on network failure.
+     */
+    private suspend fun performLogout() {
+        Instrumentation.leaveBreadcrumb("Logout initiated")
+        Instrumentation.startTimer("Logout Flow")
+        setLoading(true)
+
+        when (authRepository.logout()) {
+            is LogoutResult.Success -> {
+                Instrumentation.stopTimer("Logout Flow")
+                Instrumentation.leaveBreadcrumb("Logout succeeded (server confirmed)")
+            }
+            is LogoutResult.SuccessOffline -> {
+                Instrumentation.stopTimer("Logout Flow")
+                Instrumentation.leaveBreadcrumb("Logout succeeded (offline — local session cleared)")
+            }
+        }
+
+        // Navigate to LoginActivity and clear the entire back stack
+        startActivity(Intent(this, LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
     }
 
     private fun loadTodos() {

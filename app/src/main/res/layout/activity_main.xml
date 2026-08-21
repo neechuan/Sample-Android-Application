@@ -84,6 +84,7 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginEnd="6dp"
                         android:minWidth="0dp"
                         android:paddingStart="10dp"
                         android:paddingTop="8dp"
@@ -98,6 +99,16 @@
                         app:iconTint="@color/white"
                         app:strokeColor="#99FFFFFF"
                         app:strokeWidth="1.5dp" />
+
+                    <!-- Logout icon button — always visible in the header row -->
+                    <ImageButton
+                        android:id="@+id/btn_logout"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/logout"
+                        android:src="@drawable/ic_logout"
+                        app:tint="@color/white" />
 
                 </LinearLayout>
 
