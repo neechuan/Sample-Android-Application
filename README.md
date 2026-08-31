@@ -110,21 +110,11 @@ Sample-Android-Application/
 1. **Root Configuration (`appdynamics.properties`)**:
    Create or update [appdynamics.properties](file:///Users/garychew/Documents/poc/Sample-Android-Application/appdynamics.properties) in the project root:
    ```properties
+   APP_KEY="YOUR_EUM_APP_KEY"
    EUM_ACCOUNT_NAME="<YOUR_EUM_ACCOUNT_NAME>"
    EUM_LICENSE_KEY="<YOUR_EUM_LICENSE_KEY>"
    ```
-
-2. **App Secrets & Endpoints (`app/src/main/res/values/secrets.xml`)**:
-   Ensure [app/src/main/res/values/secrets.xml](file:///Users/garychew/Documents/poc/Sample-Android-Application/app/src/main/res/values/secrets.xml) contains your EUM App Key and Collector URL:
-   ```xml
-   <?xml version="1.0" encoding="utf-8"?>
-   <resources>
-       <string name="APP_KEY">XX-XXX-XXX-XXX</string>
-       <string name="COLLECTOR_URL">https://col.eum-appdynamics.com</string>
-       <string name="SCREENSHOT_URL">https://image.eum-appdynamics.com</string>
-   </resources>
-   ```
-
+   
 ### Build and Run
 
 #### Using the Command Line:
